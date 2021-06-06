@@ -7,6 +7,7 @@ use rayon::prelude::*;
 pub struct Cube {
     pub size: usize,
     pub values: Vec<Color>,
+    pub n_images: usize,
 }
 
 #[derive(Debug)]
@@ -21,6 +22,7 @@ impl Cube {
         let mut cube = Cube {
             size: 0,
             values: vec![],
+            n_images: 0,
         };
 
         while let Ok(read) = cube_file.read_line(&mut buf) {
@@ -58,15 +60,15 @@ impl Cube {
             .into());
         }
 
+        cube.n_images = cube.values.len() / (cube.size * cube.size);
+
         Ok(cube)
     }
 
     pub fn generate_image(&self, target_size: Option<u32>) -> Result<image::DynamicImage, Box<dyn std::error::Error>> {
-        let width = self.values.len() / self.size;
         let mut images: Vec<image::DynamicImage> = vec![];
-        let n_images = self.values.len() / (self.size * self.size);
 
-        for i in 0..n_images {
+        for i in 0..self.n_images {
             let mut img = ImageBuffer::new(self.size as _, self.size as _);
             for y in 0..self.size {
                 for x in 0..self.size {
@@ -84,18 +86,7 @@ impl Cube {
                 .for_each(|image| *image = image.resize(ts, ts, image::imageops::Triangle));
         }
 
-        let target_size = target_size.unwrap_or(self.size as _);
-        let mut final_image = ImageBuffer::<image::Rgb<u8>, _>::new(target_size * (n_images as u32), target_size);
-        for i in 0..n_images {
-            for y in 0..target_size {
-                for x in 0..target_size {
-                    let cp = images[i].as_rgb8().unwrap().get_pixel(x, y);
-                    final_image.put_pixel(x + target_size * (i as u32), y, cp.clone());
-                }
-            }
-        }
-
-        Ok(image::DynamicImage::ImageRgb8(final_image))
+        return crate::utils::horizontal_stack(&images)
     }
 }
 
