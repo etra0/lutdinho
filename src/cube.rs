@@ -2,6 +2,7 @@ use image::ImageBuffer;
 use regex::Regex;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
+use rayon::prelude::*;
 
 pub struct Cube {
     pub size: usize,
@@ -60,22 +61,41 @@ impl Cube {
         Ok(cube)
     }
 
-    pub fn generate_image(&self) -> image::DynamicImage {
+    pub fn generate_image(&self, target_size: Option<u32>) -> Result<image::DynamicImage, Box<dyn std::error::Error>> {
         let width = self.values.len() / self.size;
-        let mut img = ImageBuffer::new(width as u32, self.size as u32);
+        let mut images: Vec<image::DynamicImage> = vec![];
+        let n_images = self.values.len() / (self.size * self.size);
 
-        for (i, pixel) in self.values.iter().enumerate() {
-            let s = i / (self.size * self.size);
-            let x = (i % self.size) + self.size * s;
-            let y = (i / self.size) % self.size;
-            img.put_pixel(x as _, y as _, image::Rgb::<u8>::from(pixel));
+        for i in 0..n_images {
+            let mut img = ImageBuffer::new(self.size as _, self.size as _);
+            for y in 0..self.size {
+                for x in 0..self.size {
+                    let ix = (x + y*self.size) + self.size*self.size*i;
+                    let pixel = image::Rgb::<u8>::from(&self.values[ix]);
+                    img.put_pixel(x as _, y as _, pixel);
+                }
+            }
+            images.push(image::DynamicImage::ImageRgb8(img));
         }
-        // let (o_width, o_height) = img.dimensions();
-        let img = image::DynamicImage::ImageRgb8(img);
-        // // TODO: uncomment this (? after discussing it with gordinho
-        // let img = img.resize(o_width * 2, o_height * 2, image::imageops::Triangle);
 
-        return img;
+        if let Some(ts) = target_size {
+            images
+                .par_iter_mut()
+                .for_each(|image| *image = image.resize(ts, ts, image::imageops::Triangle));
+        }
+
+        let target_size = target_size.unwrap_or(self.size as _);
+        let mut final_image = ImageBuffer::<image::Rgb<u8>, _>::new(target_size * (n_images as u32), target_size);
+        for i in 0..n_images {
+            for y in 0..target_size {
+                for x in 0..target_size {
+                    let cp = images[i].as_rgb8().unwrap().get_pixel(x, y);
+                    final_image.put_pixel(x + target_size * (i as u32), y, cp.clone());
+                }
+            }
+        }
+
+        Ok(image::DynamicImage::ImageRgb8(final_image))
     }
 }
 

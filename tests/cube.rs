@@ -12,6 +12,6 @@ fn test_parse() {
 #[test]
 fn test_image() {
     let cube = Cube::parse(CUBE_FILE).unwrap();
-    let img = cube.generate_image();
+    let img = cube.generate_image(Some(64)).unwrap();
     img.save("output.png").unwrap();
 }

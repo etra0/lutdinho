@@ -18,3 +18,4 @@ path = "src/main.rs"
 regex = { version = "1.5" }
 image = { version = "0.23", default-features = false, features = ["png"] }
 clap = { version = "2.33" }
+rayon = "1.5"
