@@ -15,5 +15,6 @@ name = "lutdinho"
 path = "src/main.rs"
 
 [dependencies]
-regex = "1.5"
-image = "0.23"
+regex = { version = "1.5" }
+image = { version = "0.23", default-features = false, features = ["png"] }
+clap = { version = "2.33" }
