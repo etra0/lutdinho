@@ -1,7 +1,8 @@
-use image;
 
-pub fn horizontal_stack(images: &[image::DynamicImage]) -> Result<image::DynamicImage, Box<dyn std::error::Error>> {
-    if images.len() == 0 {
+pub fn horizontal_stack(
+    images: &[image::DynamicImage],
+) -> Result<image::DynamicImage, Box<dyn std::error::Error>> {
+    if images.is_empty() {
         return Err("images vec is empty".into());
     }
 
@@ -16,11 +17,13 @@ pub fn horizontal_stack(images: &[image::DynamicImage]) -> Result<image::Dynamic
         }
     }
 
-    return Ok(image::DynamicImage::ImageRgb8(final_image));
+    Ok(image::DynamicImage::ImageRgb8(final_image))
 }
 
-pub fn vertical_stack(images: &[image::DynamicImage]) -> Result<image::DynamicImage, Box<dyn std::error::Error>> {
-    if images.len() == 0 {
+pub fn vertical_stack(
+    images: &[image::DynamicImage],
+) -> Result<image::DynamicImage, Box<dyn std::error::Error>> {
+    if images.is_empty() {
         return Err("images vec is empty".into());
     }
     let (width, height) = images[0].as_rgb8().ok_or("Something")?.dimensions();
@@ -29,10 +32,10 @@ pub fn vertical_stack(images: &[image::DynamicImage]) -> Result<image::DynamicIm
         for y in 0..height {
             for x in 0..width {
                 let cp = *image.as_rgb8().unwrap().get_pixel(x, y);
-                final_image.put_pixel(x, y + height*(i as u32), cp);
+                final_image.put_pixel(x, y + height * (i as u32), cp);
             }
         }
     }
 
-    return  Ok(image::DynamicImage::ImageRgb8(final_image));
+    Ok(image::DynamicImage::ImageRgb8(final_image))
 }

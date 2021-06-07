@@ -1,8 +1,8 @@
 use image::ImageBuffer;
+use rayon::prelude::*;
 use regex::Regex;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
-use rayon::prelude::*;
 
 pub struct Cube {
     pub size: usize,
@@ -65,14 +65,17 @@ impl Cube {
         Ok(cube)
     }
 
-    pub fn generate_image(&self, target_size: Option<u32>) -> Result<image::DynamicImage, Box<dyn std::error::Error>> {
+    pub fn generate_image(
+        &self,
+        target_size: Option<u32>,
+    ) -> Result<image::DynamicImage, Box<dyn std::error::Error>> {
         let mut images: Vec<image::DynamicImage> = vec![];
 
         for i in 0..self.n_images {
             let mut img = ImageBuffer::new(self.size as _, self.size as _);
             for y in 0..self.size {
                 for x in 0..self.size {
-                    let ix = (x + y*self.size) + self.size*self.size*i;
+                    let ix = (x + y * self.size) + self.size * self.size * i;
                     let pixel = image::Rgb::<u8>::from(&self.values[ix]);
                     img.put_pixel(x as _, y as _, pixel);
                 }
@@ -86,16 +89,16 @@ impl Cube {
                 .for_each(|image| *image = image.resize(ts, ts, image::imageops::Triangle));
         }
 
-        return crate::utils::horizontal_stack(&images)
+        crate::utils::horizontal_stack(&images)
     }
 }
 
 impl From<&Color> for image::Rgb<u8> {
     fn from(color: &Color) -> Self {
-        return image::Rgb([
+        image::Rgb([
             (color.0 * 255.) as u8,
             (color.1 * 255.) as u8,
             (color.2 * 255.) as u8,
-        ]);
+        ])
     }
 }
