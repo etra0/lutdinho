@@ -16,7 +16,7 @@ pub struct Color(f32, f32, f32);
 impl Cube {
     pub fn parse<P: AsRef<Path>>(filepath: P) -> Result<Cube, Box<dyn std::error::Error>> {
         let size_regex = Regex::new(r"LUT_3D_SIZE (\d*)")?;
-        let value_regex = Regex::new(r"(\d(?:\.\d+(?:e-\d+)?)?) (\d(?:\.\d+(?:e-\d+)?)?) (\d(?:\.\d+(?:e-\d+)?)?)")?;
+        let value_regex = Regex::new(r"^[ \t]*(\d(?:\.\d+(?:e-\d+)?)?) (\d(?:\.\d+(?:e-\d+)?)?) (\d(?:\.\d+(?:e-\d+)?)?)")?;
         let filepath = filepath.as_ref();
         let mut buf = String::new();
         let file_name = filepath.file_name().unwrap().to_string_lossy();
