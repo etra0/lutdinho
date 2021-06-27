@@ -16,8 +16,10 @@ pub struct Color(f32, f32, f32);
 impl Cube {
     pub fn parse<P: AsRef<Path>>(filepath: P) -> Result<Cube, Box<dyn std::error::Error>> {
         let size_regex = Regex::new(r"LUT_3D_SIZE (\d*)")?;
-        let value_regex = Regex::new(r"(\d\.\d+) (\d\.\d+) (\d\.\d+)")?;
+        let value_regex = Regex::new(r"(\d(?:\.\d+(?:e-\d+)?)?) (\d(?:\.\d+(?:e-\d+)?)?) (\d(?:\.\d+(?:e-\d+)?)?)")?;
+        let filepath = filepath.as_ref();
         let mut buf = String::new();
+        let file_name = filepath.file_name().unwrap().to_string_lossy();
         let mut cube_file = BufReader::new(std::fs::File::open(filepath)?);
         let mut cube = Cube {
             size: 0,
@@ -53,7 +55,8 @@ impl Cube {
 
         if (cube.values.len() % cube.size) != 0_usize {
             return Err(format!(
-                "Current values aren't divisible by size: {} {}",
+                "{}: Current values aren't divisible by size: {} {}",
+                file_name,
                 cube.values.len(),
                 cube.size
             )
