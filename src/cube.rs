@@ -40,6 +40,7 @@ impl Cube {
             buf.clear();
         }
 
+        buf.clear();
         while let Ok(read) = cube_file.read_line(&mut buf) {
             if let Some(cap) = value_regex.captures(&buf) {
                 cube.values
