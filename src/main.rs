@@ -22,7 +22,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         for file in fs::read_dir(&directory)? {
             let file = file?;
             let full_name = file.path().to_str().unwrap().to_string();
-            if !full_name.ends_with(".cube") {
+            let full_name_lowercase = full_name.to_lowercase();
+            if !full_name_lowercase.ends_with(".cube") {
                 continue;
             }
             images.push(lutdinho::cube::Cube::parse(full_name)?);
