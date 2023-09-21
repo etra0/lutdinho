@@ -13,10 +13,24 @@ pub struct Cube {
 #[derive(Debug)]
 pub struct Color(f32, f32, f32);
 
+impl Color {
+    fn parse_string(s: &str) -> Option<Color> {
+        let vals: Vec<&str> = s.trim().split(" ").collect();
+        if vals.len() != 3 {
+            return None
+        }
+
+        let mut col = Color(0., 0., 0.);
+        col.0 = vals[0].parse().ok()?;
+        col.1 = vals[1].parse().ok()?;
+        col.2 = vals[2].parse().ok()?;
+        Some(col)
+    }
+}
+
 impl Cube {
     pub fn parse<P: AsRef<Path>>(filepath: P) -> Result<Cube, Box<dyn std::error::Error>> {
         let size_regex = Regex::new(r"LUT_3D_SIZE (\d*)")?;
-        let value_regex = Regex::new(r"^[ \t]*(\d(?:\.\d+(?:e-\d+)?)?) (\d(?:\.\d+(?:e-\d+)?)?) (\d(?:\.\d+(?:e-\d+)?)?)")?;
         let filepath = filepath.as_ref();
         let mut buf = String::new();
         let file_name = filepath.file_name().unwrap().to_string_lossy();
@@ -42,9 +56,8 @@ impl Cube {
 
         buf.clear();
         while let Ok(read) = cube_file.read_line(&mut buf) {
-            if let Some(cap) = value_regex.captures(&buf) {
-                cube.values
-                    .push(Color(cap[1].parse()?, cap[2].parse()?, cap[3].parse()?));
+            if let Some(color) = Color::parse_string(&buf) {
+                cube.values.push(color);
             }
 
             if read == 0 {
